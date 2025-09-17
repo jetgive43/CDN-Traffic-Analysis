@@ -379,6 +379,45 @@ function getAllHostsSummary(filePath) {
   });
 }
 
+/**
+ * Parse log content from string (similar to parseLogFile but for string input)
+ * @param {string} logContent - The log content as a string
+ * @returns {Array} Array of parsed log entries
+ */
+function parseLogFileContent(logContent) {
+  if (!logContent || typeof logContent !== "string") {
+    return [];
+  }
+
+  const lines = logContent.split("\n").filter((line) => line.trim() !== "");
+  const parsedLogs = [];
+  
+  lines.forEach((line, index) => {
+    try {
+      const parts = line.split("**");
+      if (parts.length >= 6) {
+        const logEntry = {
+          lineNumber: index + 1,
+          ip: parts[0] || "",
+          timestamp: parts[1] || "",
+          host: parts[2] || "",
+          request: parts[3] || "",
+          status: parts[4] || "",
+          size: parts[5] || "",
+          referer: parts[6] || "",
+          userAgent: parts[7] || "",
+          responseTime: parts[8] || "",
+        };
+        parsedLogs.push(logEntry);
+      }
+    } catch (error) {
+      console.error(`Error parsing line ${index + 1}: ${error.message}`);
+    }
+  });
+
+  return parsedLogs;
+}
+
 module.exports = {
   getLogLines,
   parseLogFile,
@@ -393,5 +432,6 @@ module.exports = {
   getHostSummary,
   getAllHostsSummary,
   parseTimestamp,
+  parseLogFileContent,
   calculateTimeDifference,
 };

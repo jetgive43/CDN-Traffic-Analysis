@@ -31,10 +31,16 @@ const LogTable = () => {
     setError(null);
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/getlogs/hosts/stats-with-size`
+        `${API_BASE_URL}/getlogs/category4/process-content`
       );
-      if (response.data.success) {
-        setHostStats(response.data.hostStats);
+      if (response.data.success && response.data.processedLogContent) {
+        const allHostStats = [];
+        response.data.processedLogContent.forEach((item) => {
+          if (item.hostStatistics && item.hostStatistics.length > 0) {
+            allHostStats.push(...item.hostStatistics);
+          }
+        });
+        setHostStats(allHostStats);
       }
     } catch (err) {
       setError(
@@ -46,7 +52,6 @@ const LogTable = () => {
     }
   };
 
-  
   useEffect(() => {
     fetchLogData();
     const interval = setInterval(fetchLogData, 2 * 60 * 1000);
@@ -54,24 +59,43 @@ const LogTable = () => {
   }, []);
 
   const formatBytes = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return "0 GB";
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    const gbytes = bytes / Math.pow(k, 3); // Convert to GB (1024^3)
+    return parseFloat(gbytes.toFixed(3)) + " GB";
   };
 
-  const formatTransferRate = (rate) => {
-    return parseFloat(rate).toFixed(4) + " MB/s";
+  const formatMB = (bytes) => {
+    if (bytes === 0) return "0 MB";
+    const k = 1024;
+    const mbytes = bytes / Math.pow(k, 2); // Convert to MB (1024^2)
+    return parseFloat(mbytes.toFixed(2)) + " MB";
   };
 
+  const formatKB = (bytes) => {
+    if (bytes === 0) return "0 KB";
+    const k = 1024;
+    const kbytes = bytes / k; // Convert to KB (1024^1)
+    return parseFloat(kbytes.toFixed(1)) + " KB";
+  };
+
+  const formatByte = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    return bytes.toLocaleString() + " Bytes";
+  };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, mt: 10 }}>
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
+        sx={{
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          color: "#000000",
+        }}
       >
         <Storage /> Log Analytics Dashboard
       </Typography>
@@ -97,7 +121,12 @@ const LogTable = () => {
               >
                 <Typography
                   variant="h6"
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    color: "#000000",
+                  }}
                 >
                   <Timeline /> Host Statistics
                 </Typography>
@@ -123,17 +152,11 @@ const LogTable = () => {
                         <TableCell>
                           <strong>Host Name</strong>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="center">
                           <strong>Requests</strong>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="center">
                           <strong>Total Size</strong>
-                        </TableCell>
-                        <TableCell align="right">
-                          <strong>Transfer Rate</strong>
-                        </TableCell>
-                        <TableCell align="right">
-                          <strong>Time Span</strong>
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -150,41 +173,22 @@ const LogTable = () => {
                                   {host.host}
                                 </Typography>
                               </TableCell>
-                              <TableCell align="right">
+                              <TableCell align="center">
                                 <Chip
                                   label={host.count}
                                   color="primary"
                                   size="small"
                                 />
                               </TableCell>
-                              <TableCell align="right">
+                              <TableCell align="center">
                                 <Typography variant="body2">
-                                  {host.totalSize}
-                                </Typography>
-                              </TableCell>
-                              <TableCell align="right">
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                    justifyContent: "flex-end",
-                                  }}
-                                >
-                                  <Speed fontSize="small" />
-                                  <Typography variant="body2">
-                                    {formatTransferRate(
-                                      host.transferRateMBPerSecond
-                                    )}
-                                  </Typography>
-                                </Box>
-                              </TableCell>
-                              <TableCell align="right">
-                                <Typography variant="body2">
-                                  {parseFloat(
-                                    host.timeDifferenceMinutes
-                                  ).toFixed(1)}{" "}
-                                  min
+                                  {host.totalSize}(
+                                  {formatBytes(host.totalSize) +
+                                    "/" +
+                                    formatMB(host.totalSize) +
+                                    "/" +
+                                    formatKB(host.totalSize)}
+                                  )
                                 </Typography>
                               </TableCell>
                             </TableRow>
@@ -197,7 +201,6 @@ const LogTable = () => {
             </CardContent>
           </Card>
         </Grid>
-
       </Typography>
     </Box>
   );

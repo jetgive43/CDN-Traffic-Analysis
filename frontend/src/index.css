@@ -5,7 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg,  #000000, #828283);
+  /* background: linear-gradient(135deg,  #000000, #828283); */
   color: #ffffff;
 
   /* background-image: url('/public/ocean-bg.jpg'); */

@@ -1,23 +1,30 @@
-import React from 'react';
-import { Container, Typography, Box, Grid, Card, CardContent } from '@mui/material';
-import { Dashboard, Analytics, Storage } from '@mui/icons-material';
-import LogTable from '../components/LogTable';
+import React from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
+import { Dashboard, Analytics, Storage } from "@mui/icons-material";
+import LogTable from "../components/LogTable";
 
 export default function Home() {
-    return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-            {/* Welcome Section */}
-            <Box sx={{ mb: 4 }}>
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Welcome Section */}
+      {/* <Box sx={{ mb: 4 }}>
                 <Typography variant="h3" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Dashboard /> Log Analytics Dashboard
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3, color: "#ffffff" }} >
                     Monitor and analyze your server logs with real-time statistics and insights
                 </Typography>
-            </Box>
+            </Box> */}
 
-            {/* Feature Cards */}
-            <Grid container spacing={5} sx={{ mb: 4 }}>
+      {/* Feature Cards */}
+      {/* <Grid container spacing={5} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={4}>
                     <Card sx={{ height: '100%' }}>
                         <CardContent sx={{ textAlign: 'center', py: 3 }}>
@@ -57,12 +64,10 @@ export default function Home() {
                         </CardContent>
                     </Card>
                 </Grid>
-            </Grid>
+            </Grid> */}
 
-            {/* Log Table Component */}
-            <LogTable />
-
-
-        </Container>
-    );
+      {/* Log Table Component */}
+      <LogTable />
+    </Container>
+  );
 }
