@@ -143,7 +143,7 @@ function getHostNameStatsWithSize(filePath) {
       const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
 
       // Get time range for transfer rate calculation
-      const hostLogs = getLogsByHostName(filePath, host);
+      const hostLogs = getLogsByHostName(filePath, host);       
       const timestamps = hostLogs.map((log) => log.timestamp).sort();
       const firstRequest = timestamps[0] || "N/A";
       const lastRequest = timestamps[timestamps.length - 1] || "N/A";

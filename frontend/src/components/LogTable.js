@@ -33,13 +33,24 @@ const LogTable = () => {
       const response = await axios.get(
         `${API_BASE_URL}/getlogs/category4/process-content`
       );
+
       if (response.data.success && response.data.processedLogContent) {
-        const allHostStats = [];
+        let allHostStats = [];
+
         response.data.processedLogContent.forEach((item) => {
           if (item.hostStatistics && item.hostStatistics.length > 0) {
             allHostStats.push(...item.hostStatistics);
           }
         });
+
+        allHostStats = allHostStats
+          .filter((stat) => stat !== null)
+          .filter(
+            (stat, index, self) =>
+              index === self.findIndex((s) => s.host === stat.host) // keep only first occurrence of each host
+          )
+          .sort((a, b) => (b.totalSize || 0) - (a.totalSize || 0));
+
         setHostStats(allHostStats);
       }
     } catch (err) {
@@ -79,13 +90,8 @@ const LogTable = () => {
     return parseFloat(kbytes.toFixed(1)) + " KB";
   };
 
-  const formatByte = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
-    return bytes.toLocaleString() + " Bytes";
-  };
-
   return (
-    <Box sx={{ p: 3, mt: 10 }}>
+    <Box sx={{ p: 2 }}>
       <Typography
         variant="h4"
         gutterBottom
@@ -158,6 +164,12 @@ const LogTable = () => {
                         <TableCell align="center">
                           <strong>Total Size</strong>
                         </TableCell>
+                        <TableCell align="center">
+                          <strong>Speed (Mbps)</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Time Span</strong>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -189,6 +201,16 @@ const LogTable = () => {
                                     "/" +
                                     formatKB(host.totalSize)}
                                   )
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography variant="body2">
+                                  {host.transferRateMbps}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography variant="body2">
+                                  {host.timeDifferenceMinutes}(Minutes)
                                 </Typography>
                               </TableCell>
                             </TableRow>

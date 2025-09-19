@@ -430,7 +430,7 @@ router.get("/getlogs/category4/process-content", async (req, res) => {
     console.log(
       `Processing ${validNodes.length} valid nodes with log content...`
     );
-    
+
     const processedResults = [];
 
     for (const node of validNodes) {
@@ -458,18 +458,50 @@ router.get("/getlogs/category4/process-content", async (req, res) => {
             hostSizes[host] = (hostSizes[host] || 0) + size;
           }
         });
-      
+
         const hostStatsArray = Object.entries(hostCounts)
           .map(([host, count]) => {
+            const ipRegex = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+            if (ipRegex.test(host)) return null;
             const totalSize = hostSizes[host] || 0;
+            const hostLogs = parsedLogs.filter((entry) => entry.host === host);
+            const timestamps = hostLogs.map((log) => log.timestamp).sort();
+            const firstRequest = timestamps[0] || "N/A";
+            const lastRequest = timestamps[timestamps.length - 1] || "N/A";
+
+            let transferRateBytesPerSecond = 0;
+            let transferRateMBPerSecond = 0;
+            let transferRateMbps = 0;
+            let timeDifferenceSeconds = 0;
+
+            if (firstRequest !== "N/A" && lastRequest !== "N/A") {
+              timeDifferenceSeconds = calculateTimeDifference(
+                firstRequest,
+                lastRequest
+              );
+
+              if (timeDifferenceSeconds > 0) {
+                transferRateBytesPerSecond = totalSize / timeDifferenceSeconds;
+                transferRateMBPerSecond =
+                  transferRateBytesPerSecond / (1024 * 1024);
+                transferRateMbps = (transferRateBytesPerSecond * 8) / 1_000_000;
+              }
+            }
+
             if (count > 2) {
               return {
                 host,
                 count,
                 totalSize,
+                timeDifferenceSeconds,
+                timeDifferenceSeconds,
+                timeDifferenceMinutes: (timeDifferenceSeconds / 60).toFixed(2),
+                transferRateMBPerSecond: transferRateMBPerSecond.toFixed(2),
+                transferRateMbps: transferRateMbps.toFixed(2),
               };
             }
           })
+          .filter(Boolean) // remove undefined
           .sort((a, b) => b.totalSize - a.totalSize);
         processedResults.push({
           serverIP: ip,
